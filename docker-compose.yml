@@ -1,0 +1,74 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: app/symfony
+    container_name: app
+    restart: always
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+      PHP_IDE_CONFIG: serverName=app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - mynet
+    depends_on:
+      - db
+    entrypoint: ./entrypoint.dev.sh
+  nginx:
+    image: nginx:alpine
+    container_name: app_nginx
+    restart: always
+    tty: true
+    ports:
+      - '${APP_PORT:-99}:99' # Set any free port for local but also change nginx.conf
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - mynet
+  db:
+    image: mysql:8.0.25
+    container_name: app_db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - app_db:/var/lib/mysql
+    ports:
+      - '${FORWARD_DB_PORT:-3301}:3306' # Set any free port for local
+    networks:
+      - mynet
+  db_test:
+    image: mysql:8.0.25
+    container_name: app_test_db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: 'api_db_test'
+      MYSQL_USER: 'api_db_test'
+      MYSQL_PASSWORD: 'api_db_test'
+      MYSQL_ROOT_PASSWORD: 'root_password'
+    volumes:
+      - app_test_db:/var/lib/mysql
+    ports:
+      - '3302:3306'
+    networks:
+      - mynet
+
+volumes:
+  app_db:
+  app_test_db:
+
+networks:
+  mynet:
+    driver: bridge

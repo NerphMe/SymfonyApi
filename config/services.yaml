@@ -1,0 +1,43 @@
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Api/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Api/Model/'
+            - '../src/Migrations'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    _instanceof:
+        App\Api\ModelBuilder\ModelBuilderInterface:
+            tags: ['app.api.backend.model_builder']
+
+    App\Api\Controller\:
+        resource: '../src/Api/Controller'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    App\Api\ModelBuilder\ModelBuilderRegistry:
+        # inject all services tagged with kw.api.backend.data_provider.model_builder as first argument
+        arguments: [!tagged 'app.api.backend.model_builder']
+
+    App\Api\Model\ModelResolver:
+        tags: [ 'controller.argument_value_resolver' ]
+
+    App\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }

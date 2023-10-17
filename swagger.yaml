@@ -1,0 +1,147 @@
+openapi: 3.0.0
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/employee:
+    get:
+      summary: 'Get list of all employees'
+      responses:
+        '200':
+          description: 'Returns the list of all employees'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '400':
+          description: 'Bad request'
+    post:
+      summary: 'Create a new employee'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateEmployeeModel'
+      responses:
+        '201':
+          description: 'Employee created successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: 'Invalid input'
+        '403':
+          description: Forbidden
+  '/api/employee/{employee}':
+    get:
+      summary: 'Get details of a single employee'
+      parameters:
+        -
+          name: employee
+          in: path
+          description: 'The unique identifier of the employee.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Returns detailed information about one employee'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: 'Employee not found'
+    put:
+      summary: 'Update an employee'
+      parameters:
+        -
+          name: employee
+          in: path
+          description: 'The unique identifier of the employee.'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateEmployeeModel'
+      responses:
+        '200':
+          description: 'Employee updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: 'Invalid input'
+        '404':
+          description: 'Employee not found'
+        '403':
+          description: Forbidden
+    delete:
+      summary: 'Delete an employee'
+      parameters:
+        -
+          name: employee
+          in: path
+          description: 'The unique identifier of the employee.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'Employee deleted successfully'
+        '404':
+          description: 'Employee not found'
+        '403':
+          description: Forbidden
+components:
+  schemas:
+    Employee:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+        hiredAt:
+          type: string
+          format: date-time
+        currentSalaryAmount:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+      type: object
+    CreateOrUpdateEmployeeModel:
+      required:
+        - name
+        - surname
+        - email
+        - currentSalaryAmount
+        - hiredAt
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+        currentSalaryAmount:
+          type: string
+          minimum: 100
+        hiredAt:
+          type: string
+      type: object
